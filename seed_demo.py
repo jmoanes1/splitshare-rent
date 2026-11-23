@@ -25,9 +25,10 @@ from apps.properties.models import Property, PropertyImage, Room, RoomImage, Boo
 BASE = Path(settings.BASE_DIR)
 DEMO_PASSWORD = 'DemoPass123!'
 
-if Property.objects.exists():
-    print('Properties already exist — skipping seed.')
+if Property.objects.filter(is_published=True, status=Property.Status.APPROVED).exists() and Room.objects.exists():
+    print('Properties and rooms already exist — skipping seed.')
     raise SystemExit(0)
+
 
 
 def copy_image(src_rel, dest_rel):

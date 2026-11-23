@@ -78,18 +78,14 @@ def browse_rooms(request):
         rooms = rooms.order_by('-created_at')
 
     # Distinct filter values for the UI
-    cities = (
+    cities = sorted(set(
         Property.objects.filter(status=Property.Status.APPROVED, is_published=True)
         .values_list('city', flat=True)
-        .distinct()
-        .order_by('city')
-    )
-    provinces = (
+    ))
+    provinces = sorted(set(
         Property.objects.filter(status=Property.Status.APPROVED, is_published=True)
         .values_list('province', flat=True)
-        .distinct()
-        .order_by('province')
-    )
+    ))
 
     paginator = Paginator(rooms, 12)
     page_number = request.GET.get('page')
