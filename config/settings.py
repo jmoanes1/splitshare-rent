@@ -19,9 +19,25 @@ SECRET_KEY = config(
 )
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS', default='localhost,127.0.0.1',
+    'ALLOWED_HOSTS', default='localhost,127.0.0.1,splitshare-rent.onrender.com',
     cast=lambda v: [s.strip() for s in v.split(',') if s.strip()],
 )
+
+# Render automatically provides RENDER_EXTERNAL_HOSTNAME in the environment
+RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# CSRF trusted origins for Render
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://splitshare-rent.onrender.com',
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()],
+)
+if RENDER_EXTERNAL_HOSTNAME:
+    render_origin = f'https://{RENDER_EXTERNAL_HOSTNAME}'
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
