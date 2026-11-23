@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}My Profile — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="dash-head">
+  <div>
+    <span class="eyebrow">{% icon 'user' %} Account</span>
+    <h1>My profile</h1>
+    <p>Your personal details, verification status, and account security.</p>
+  </div>
+  <div class="flex">
+    <a class="btn btn-secondary" href="{% url 'dashboard' %}">{% icon 'grid' %} Dashboard</a>
+    <a class="btn btn-primary" href="{% url 'profile_edit' %}">{% icon 'edit' %} Edit profile</a>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="profile-head">
+    <span class="avatar emerald lg">
+      {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">
+      {% else %}{{ user.first_name|first|default:"U" }}{{ user.last_name|first }}{% endif %}
+    </span>
+    <div class="grow">
+      <h1>{{ user.get_full_name }}</h1>
+      <div class="profile-email">{{ user.email }}</div>
+      <div class="flex flex-wrap mt-1">
+        <span class="badge badge-emerald">{{ user.get_role_display }}</span>
+        {% if profile.verification_status == 'APPROVED' %}
+          <span class="badge badge-success">{% icon 'shield' %} ID verified</span>
+        {% elif profile.verification_status == 'REJECTED' %}
+          <span class="badge badge-error">{% icon 'alert' %} Verification rejected</span>
+        {% else %}
+          <span class="badge badge-warning">{% icon 'clock' %} Verification pending</span>
+        {% endif %}
+        <span class="badge">Joined {{ user.date_joined|date:"M Y" }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="profile-facts">
+    <div><span>First name</span><strong>{{ profile.first_name|default:"—" }}</strong></div>
+    <div><span>Last name</span><strong>{{ profile.last_name|default:"—" }}</strong></div>
+    <div><span>Phone</span><strong>{{ profile.phone_number|default:"Not provided" }}</strong></div>
+    <div><span>Email</span><strong>{{ user.email }}</strong></div>
+    {% if user.is_renter %}
+      <div><span>Date of birth</span><strong>{{ profile.date_of_birth|date:"M j, Y"|default:"Not provided" }}</strong></div>
+      <div><span>Employment</span><strong>{{ profile.employment_status|title|default:"Not provided" }}</strong></div>
+    {% endif %}
+    {% if user.is_owner %}
+      <div><span>Business name</span><strong>{{ profile.business_name|default:"Individual host" }}</strong></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid profile-grid">
+  <div class="card">
+    <div class="card-title">{% icon 'shield' %}<h3>Identity verification</h3></div>
+    {% if profile.verification_status == 'APPROVED' %}
+      <div class="verify-banner ok" style="margin-bottom: 1rem;">
+        {% icon 'check-circle' %}
+        <div><strong>You&rsquo;re verified</strong><span>Your identity has been confirmed. Your profile shows a trust badge to hosts and renters.</span></div>
+      </div>
+    {% else %}
+      <div class="verify-banner" style="margin-bottom: 1rem;">
+        {% icon 'alert' %}
+        <div><strong>Verify your identity</strong><span>Upload a government-issued ID to unlock the verified badge and build trust.</span></div>
+        <a class="btn btn-sm btn-primary" href="{% url 'verification_submit' %}">Submit ID</a>
+      </div>
+    {% endif %}
+
+    {% if documents %}
+      <div class="doc-list">
+        {% for doc in documents %}
+          <div class="doc-item">
+            {% icon 'doc' %}
+            <div>
+              <strong>{{ doc.get_document_type_display }}</strong>
+              <span>Submitted {{ doc.submitted_at|date:"M j, Y g:i A" }}{% if doc.reviewed_at %} · Reviewed {{ doc.reviewed_at|date:"M j, Y" }}{% endif %}</span>
+              {% if doc.rejection_reason %}<span style="color: var(--error); display: block;">Reason: {{ doc.rejection_reason }}</span>{% endif %}
+            </div>
+            <span class="badge status-{{ doc.status|lower }}">{{ doc.get_status_display }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0" style="font-size: 0.875rem;">No documents submitted yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">{% icon 'settings' %}<h3>Account &amp; security</h3></div>
+    <div class="grid" style="gap: 0.65rem;">
+      <a class="btn btn-secondary btn-block" href="{% url 'profile_edit' %}">{% icon 'edit' %} Edit personal details</a>
+      <a class="btn btn-secondary btn-block" href="{% url 'password_change' %}">{% icon 'lock' %} Change password</a>
+      <a class="btn btn-secondary btn-block" href="{% url 'email_verification' %}">{% icon 'mail' %} {% if user.email_verified %}Email verified{% else %}Verify email address{% endif %}</a>
+      <a class="btn btn-secondary btn-block" href="{% url 'verification_submit' %}">{% icon 'shield' %} Submit verification document</a>
+      {% if user.is_owner %}
+        <a class="btn btn-secondary btn-block" href="{% url 'booking_requests' %}">{% icon 'mail' %} Booking requests</a>
+      {% endif %}
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="btn btn-danger-ghost btn-block" type="submit">{% icon 'logout' %} Log out</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

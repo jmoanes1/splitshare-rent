@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}Request to Book — {{ room.name }} | ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin-inline: auto;">
+  <div class="dash-head">
+    <div>
+      <span class="eyebrow">{% icon 'calendar' %} Booking request</span>
+      <h1>Request to book</h1>
+      <p>Tell the host about yourself and when you&rsquo;d like to move in. Nothing is confirmed until the host accepts.</p>
+    </div>
+  </div>
+
+  <div class="grid booking-layout">
+    <div class="card" style="padding: 0; overflow: hidden; align-self: start;">
+      <div style="aspect-ratio: 4/3; overflow: hidden;">
+        {% if room.main_image %}
+          <img src="{{ room.main_image.image.url }}" alt="{{ room.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+          <img src="{% static 'images/rooms/room-1.jpg' %}" alt="{{ room.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+        {% endif %}
+      </div>
+      <div style="padding: 1.25rem;">
+        <div class="room-price">{{ room.monthly_rent|peso }}<small> / month</small></div>
+        <h3 class="mt-1 mb-1">{{ room.name }}</h3>
+        <div class="room-location mb-2">{% icon 'pin' %} {{ room.property_listing.location }}</div>
+        <div class="flex flex-wrap">
+          <span class="chip">{% icon 'bed' %} {{ room.get_room_type_display }}</span>
+          <span class="chip">{% icon 'bath' %} {{ room.get_bathroom_type_display }} bath</span>
+          {% if room.furnished %}<span class="chip">{% icon 'sofa' %} Furnished</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">{% icon 'mail' %}<h3>Your message to the host</h3></div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'accounts/_field.html' with field=form.move_in_date %}
+        {% include 'accounts/_field.html' with field=form.message %}
+        <div class="alert alert-info" style="margin-bottom: 1.25rem;">
+          {% icon 'info' %}
+          <span>Your contact details are shared with the host only after they accept your request.</span>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit">{% icon 'mail' %} Send booking request</button>
+        <a class="btn btn-ghost btn-block mt-1" href="{% url 'room_detail' room.id %}">Back to room</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

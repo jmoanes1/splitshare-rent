@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}{{ room.name }} — {{ property.city }} | ShareSplit Rent{% endblock %}
+{% block meta_description %}{{ room.name }} in {{ property.location }} — {{ room.monthly_rent|peso }} per month. {{ room.get_room_type_display }}, {% if room.furnished %}furnished{% else %}unfurnished{% endif %}, {{ room.get_bathroom_type_display|lower }} bathroom. View photos, amenities, and house rules on ShareSplit Rent.{% endblock %}
+
+{% block content %}
+<nav class="flex mb-2" aria-label="Breadcrumb" style="font-size: 0.8125rem; color: var(--muted);">
+  <a href="{% url 'home' %}">Home</a> {% icon 'chevron-right' %}
+  <a href="{% url 'browse_rooms' %}">Browse Rooms</a> {% icon 'chevron-right' %}
+  <span style="color: var(--navy); font-weight: 500;">{{ room.name }}</span>
+</nav>
+
+<div class="detail-layout">
+  <div>
+    <div class="gallery">
+      <div class="gallery-main">
+        {% if images %}
+          <img id="gallery-main-img" src="{{ images.0.image.url }}" alt="{{ images.0.caption|default:room.name }}">
+        {% elif property_images %}
+          <img id="gallery-main-img" src="{{ property_images.0.image.url }}" alt="{{ property_images.0.caption|default:property.title }}">
+        {% else %}
+          <img id="gallery-main-img" src="{% static 'images/rooms/room-1.jpg' %}" alt="{{ room.name }}">
+        {% endif %}
+        <span class="badge {% if room.availability == 'AVAILABLE' %}badge-success{% else %}badge-warning{% endif %}">
+          <span class="dot"></span> {{ room.get_availability_display }}
+        </span>
+      </div>
+      {% if images or property_images %}
+        <div class="gallery-thumbs" role="group" aria-label="Photo gallery">
+          {% for img in images %}
+            <button type="button" data-full="{{ img.image.url }}" data-caption="{{ img.caption|default:room.name }}"
+                    class="{% if forloop.first %}active{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-label="View photo {{ forloop.counter }}">
+              <img src="{{ img.image.url }}" alt="" loading="lazy">
+            </button>
+          {% endfor %}
+          {% for img in property_images %}
+            <button type="button" data-full="{{ img.image.url }}" data-caption="{{ img.caption|default:property.title }}"
+                    class="{% if not images and forloop.first %}active{% endif %}" aria-pressed="false"
+                    aria-label="View property photo {{ forloop.counter }}">
+              <img src="{{ img.image.url }}" alt="" loading="lazy">
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-header">
+      <div class="flex flex-wrap mb-1">
+        <span class="badge badge-emerald">{{ room.get_room_type_display }}</span>
+        <span class="badge">{{ property.get_property_type_display }}</span>
+        {% if room.furnished %}<span class="badge badge-gold">{% icon 'sofa' %} Furnished</span>{% endif %}
+      </div>
+      <h1>{{ room.name }}</h1>
+      <div class="detail-location">{% icon 'pin' %} {{ property.location }}</div>
+    </div>
+
+    <div class="fact-row">
+      <div class="fact reveal">{% icon 'ruler' %}<strong>{% if room.room_size %}{{ room.room_size }} sqm{% else %}—{% endif %}</strong><span>Room size</span></div>
+      <div class="fact reveal">{% icon 'users' %}<strong>{{ room.max_occupants }}</strong><span>Max occupants</span></div>
+      <div class="fact reveal">{% icon 'bath' %}<strong>{{ room.get_bathroom_type_display }}</strong><span>Bathroom</span></div>
+      <div class="fact reveal">{% icon 'calendar' %}<strong>{% if room.available_from %}{{ room.available_from|date:"M j, Y" }}{% else %}Now{% endif %}</strong><span>Available from</span></div>
+    </div>
+
+    <div class="card mb-2 reveal">
+      <div class="card-title">{% icon 'doc' %}<h3>About this room</h3></div>
+      <p style="white-space: pre-line;">{{ room.description|default:"A comfortable space in a well-kept shared home. Contact the host for more details about the room and the household." }}</p>
+      <h4 style="margin-top: 1.25rem;">About the property</h4>
+      <p class="mb-0" style="white-space: pre-line;">{{ property.description }}</p>
+    </div>
+
+    {% if room.room_amenities or property.property_amenities or property.shared_facilities %}
+      <div class="card mb-2 reveal">
+        <div class="card-title">{% icon 'sparkles' %}<h3>Amenities &amp; facilities</h3></div>
+        {% if room.room_amenities %}
+          <h4>In this room</h4>
+          <ul class="plain-list amenity-grid mb-2">
+            {% for amenity in room.room_amenities|split_amenities %}
+              <li>{% icon 'check-circle' %} {{ amenity }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if property.property_amenities %}
+          <h4>In the property</h4>
+          <ul class="plain-list amenity-grid mb-2">
+            {% for amenity in property.property_amenities|split_amenities %}
+              <li>{% icon 'check-circle' %} {{ amenity }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if property.shared_facilities %}
+          <h4>Shared facilities</h4>
+          <ul class="plain-list amenity-grid">
+            {% for amenity in property.shared_facilities|split_amenities %}
+              <li>{% icon 'check-circle' %} {{ amenity }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if property.house_rules %}
+      <div class="card mb-2 reveal">
+        <div class="card-title">{% icon 'shield' %}<h3>House rules</h3></div>
+        <ul class="rules-list">
+          {% for rule in property.house_rules|split_amenities %}
+            <li>{% icon 'info' %} <span>{{ rule }}</span></li>
+          {% endfor %}
+        </ul>
+        {% if property.parking_available %}
+          <div class="mt-2"><span class="chip">{% icon 'car' %} Parking available</span></div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="card booking-card mb-2">
+      <div class="booking-price">{{ room.monthly_rent|peso }}<small> / month</small></div>
+      {% if room.weekly_rent %}<div class="text-muted" style="font-size: 0.8125rem;">or {{ room.weekly_rent|peso }} / week</div>{% endif %}
+      <div class="booking-facts">
+        <div><span>Room type</span><strong>{{ room.get_room_type_display }}</strong></div>
+        <div><span>Bathroom</span><strong>{{ room.get_bathroom_type_display }}</strong></div>
+        <div><span>Furnishing</span><strong>{% if room.furnished %}Furnished{% else %}Unfurnished{% endif %}</strong></div>
+        <div><span>Status</span><strong>{{ room.get_availability_display }}</strong></div>
+      </div>
+
+      {% if not user.is_authenticated %}
+        {% if room.is_bookable %}
+          <a class="btn btn-primary btn-block btn-lg" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% icon 'calendar' %} Log in to book</a>
+          <p class="helptext text-center mt-1 mb-0">New here? <a href="{% url 'register_renter' %}">Create a free renter account</a></p>
+        {% else %}
+          <button class="btn btn-secondary btn-block btn-lg" disabled>Currently unavailable</button>
+        {% endif %}
+      {% elif owner == user %}
+        <a class="btn btn-secondary btn-block btn-lg" href="{% url 'owner_dashboard' %}">{% icon 'grid' %} Manage in dashboard</a>
+        <p class="helptext text-center mt-1 mb-0">This is your own listing.</p>
+      {% elif user_booking %}
+        <div class="alert {% if user_booking.status == 'ACCEPTED' %}alert-success{% else %}alert-info{% endif %} mb-2" style="margin-bottom: 0.85rem;">
+          {% icon 'check-circle' %}
+          <span>{% if user_booking.status == 'ACCEPTED' %}Your booking is accepted — see Rental Info in your dashboard.{% else %}Your booking request is pending host review.{% endif %}</span>
+        </div>
+        <a class="btn btn-secondary btn-block" href="{% url 'renter_dashboard' %}#bookings">View my bookings</a>
+      {% elif not user.is_renter %}
+        <p class="helptext">Booking requests are available to renter accounts.</p>
+        <a class="btn btn-secondary btn-block" href="{% url 'dashboard' %}">Go to dashboard</a>
+      {% elif room.is_bookable %}
+        <a class="btn btn-primary btn-block btn-lg" href="{% url 'booking_create' room.id %}">{% icon 'calendar' %} Request to book</a>
+        <p class="helptext text-center mt-1 mb-0">Free to request — the host reviews before you commit.</p>
+      {% else %}
+        <button class="btn btn-secondary btn-block btn-lg" disabled>Currently unavailable</button>
+      {% endif %}
+
+      {% if user.is_renter %}
+        <form method="post" action="{% url 'toggle_saved' room.id %}" class="mt-2">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn {% if room.id in saved_room_ids %}btn-secondary{% else %}btn-outline{% endif %} btn-block">
+            {% icon 'heart' %} {% if room.id in saved_room_ids %}Saved to shortlist{% else %}Save this room{% endif %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="card reveal">
+      <div class="card-title">{% icon 'user' %}<h3>Your host</h3></div>
+      <div class="host-card">
+        <span class="avatar">
+          {% if owner.owner_profile.profile_picture %}<img src="{{ owner.owner_profile.profile_picture.url }}" alt="">
+          {% else %}{{ owner.first_name|first|default:"H" }}{{ owner.last_name|first }}{% endif %}
+        </span>
+        <div>
+          <strong>{{ owner.get_full_name }}</strong>
+          <span>{% if owner.owner_profile.business_name %}{{ owner.owner_profile.business_name }} · {% endif %}Host since {{ owner.date_joined|date:"Y" }}</span>
+        </div>
+      </div>
+      <div class="host-meta">
+        {% if owner.owner_profile.verification_status == 'APPROVED' %}
+          <span class="badge badge-success">{% icon 'shield' %} ID verified</span>
+        {% else %}
+          <span class="badge badge-warning">{% icon 'clock' %} Verification pending</span>
+        {% endif %}
+        <span class="badge">{% icon 'home' %} {{ owner.properties.count }} propert{{ owner.properties.count|pluralize:"y,ies" }}</span>
+      </div>
+      {% if owner.phone_number %}
+        <p class="helptext mt-2 mb-0">{% icon 'phone' %} Contact details are shared after your booking request is accepted.</p>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+{% if similar_rooms %}
+  <section class="section" style="padding-bottom: 0;">
+    <div class="flex-between flex-wrap mb-3">
+      <div class="section-head" style="margin-bottom: 0;">
+        <span class="eyebrow">{% icon 'pin' %} More in {{ property.city }}</span>
+        <h2 class="mb-0">Similar rooms you may like</h2>
+      </div>
+      <a class="btn btn-outline" href="{% url 'browse_rooms' %}?city={{ property.city|urlencode }}">See all in {{ property.city }}</a>
+    </div>
+    <div class="room-grid">
+      {% for room in similar_rooms %}
+        {% include 'properties/_room_card.html' with room=room %}
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'accounts/base_auth.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Log in — ShareSplit Rent{% endblock %}
+
+{% block auth_brand %}
+  <h2>Welcome back to your space.</h2>
+  <p>Log in to manage bookings, saved rooms, and your listings — all in one dashboard.</p>
+  <ul class="auth-points">
+    <li>{% icon 'calendar' %} Track booking requests in real time</li>
+    <li>{% icon 'heart' %} Keep a shortlist of favorite rooms</li>
+    <li>{% icon 'grid' %} Manage listings and availability</li>
+  </ul>
+{% endblock %}
+
+{% block auth_form %}
+  <div class="auth-head">
+    <h1>Log in</h1>
+    <p>Enter your email and password to continue.</p>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="form-errors">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next_url }}">
+    {% include 'accounts/_field.html' with field=form.email %}
+    {% include 'accounts/_password_field.html' with field=form.password %}
+    <div class="flex-between mb-3" style="margin-top: -0.35rem;">
+      <span></span>
+      <a href="{% url 'password_reset' %}" style="font-size: 0.8125rem; font-weight: 500;">Forgot password?</a>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" type="submit">Log in {% icon 'arrow-right' %}</button>
+  </form>
+{% endblock %}
+
+{% block auth_alt %}
+  <p class="auth-alt">New to ShareSplit Rent? <a href="{% url 'register_renter' %}">Sign up as a renter</a> or <a href="{% url 'register_owner' %}">become a host</a>.</p>
+{% endblock %}

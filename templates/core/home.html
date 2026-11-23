@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}ShareSplit Rent — Affordable Rooms in Verified Shared Homes{% endblock %}
+{% block main_class %}main-content flush{% endblock %}
+
+{% block messages %}
+  {% if messages %}
+    <div class="container" style="padding-top: 1.25rem;">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+          {% if message.tags == 'success' %}{% icon 'check-circle' %}{% elif message.tags == 'error' %}{% icon 'alert' %}{% else %}{% icon 'info' %}{% endif %}
+          <span>{{ message }}</span>
+          <button class="alert-close" type="button" aria-label="Dismiss">{% icon 'x' %}</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-bg">
+    <img src="{% static 'images/hero.jpg' %}" alt="A bright, welcoming shared home living room in the Philippines">
+  </div>
+  <div class="container">
+    <div class="hero-inner">
+      <span class="eyebrow gold">{% icon 'sparkles' %} The Philippines&rsquo; room-rental marketplace</span>
+      <h1>Find your space.<br><em>Share more.</em> Live better.</h1>
+      <p class="hero-sub">Discover affordable private rooms in verified shared homes across the Philippines — transparent monthly pricing, trusted hosts, and secure booking requests.</p>
+      <div class="flex flex-wrap">
+        <a class="btn btn-primary btn-lg" href="{% url 'browse_rooms' %}">{% icon 'search' %} Browse Rooms</a>
+        <a class="btn btn-lg" style="background: rgba(255,255,255,0.12); color:#fff; border-color: rgba(255,255,255,0.35);" href="{% url 'become_a_host' %}">Become a Host</a>
+      </div>
+      <div class="hero-trust">
+        <span>{% icon 'shield' %} ID-verified hosts</span>
+        <span>{% icon 'peso' %} No hidden charges</span>
+        <span>{% icon 'lock' %} Secure booking requests</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="search-card reveal">
+    <form method="get" action="{% url 'browse_rooms' %}" role="search" aria-label="Search rooms">
+      <div class="search-field">
+        <label for="hero-q">Location</label>
+        <div class="input-icon">
+          {% icon 'pin' %}
+          <input class="form-control" type="search" id="hero-q" name="q" placeholder="City, province, or region — e.g. Quezon City">
+        </div>
+      </div>
+      <div class="search-field">
+        <label for="hero-type">Room type</label>
+        <select class="form-control" id="hero-type" name="room_type">
+          <option value="">Any type</option>
+          {% for value, label in room_type_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="search-field">
+        <label for="hero-price">Max monthly budget</label>
+        <select class="form-control" id="hero-price" name="max_price">
+          <option value="">Any budget</option>
+          <option value="5000">Up to &#8369;5,000</option>
+          <option value="8000">Up to &#8369;8,000</option>
+          <option value="12000">Up to &#8369;12,000</option>
+          <option value="20000">Up to &#8369;20,000</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit">{% icon 'search' %} Search</button>
+    </form>
+  </div>
+
+  <div class="stats-strip">
+    <div class="card stat-tile reveal">
+      <span class="stat-num">{{ stats.rooms }}</span>
+      <span class="stat-label">Rooms available now</span>
+    </div>
+    <div class="card stat-tile reveal">
+      <span class="stat-num">{{ stats.cities }}</span>
+      <span class="stat-label">Cities &amp; municipalities</span>
+    </div>
+    <div class="card stat-tile reveal">
+      <span class="stat-num">{{ stats.hosts }}</span>
+      <span class="stat-label">Verified local hosts</span>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="featured">
+  <div class="container">
+    <div class="flex-between flex-wrap mb-3">
+      <div class="section-head" style="margin-bottom: 0;">
+        <span class="eyebrow">{% icon 'home' %} Featured rooms</span>
+        <h2 class="mb-0">Fresh spaces, ready to move in</h2>
+      </div>
+      <a class="btn btn-outline" href="{% url 'browse_rooms' %}">View all rooms {% icon 'arrow-right' %}</a>
+    </div>
+    {% if featured_rooms %}
+      <div class="room-grid">
+        {% for room in featured_rooms %}
+          {% include 'properties/_room_card.html' with room=room %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card empty-state">
+        <div class="empty-icon">{% icon 'home' %}</div>
+        <h3>New rooms are on the way</h3>
+        <p>Hosts are listing their spaces right now. Check back shortly or register to be first in line.</p>
+        <a class="btn btn-primary" href="{% url 'register_renter' %}">Create a free account</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" id="how" style="background: var(--surface); border-block: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">{% icon 'sparkles' %} How it works</span>
+      <h2>Three simple steps to your next home</h2>
+      <p>From search to move-in, ShareSplit Rent keeps every step transparent and secure.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="card step-card reveal">
+        <span class="step-num">1</span>
+        <h3>Create your free account</h3>
+        <p>Sign up as a renter or host and verify your identity with a government ID. Verification builds trust for everyone in the community.</p>
+      </div>
+      <div class="card step-card reveal">
+        <span class="step-num">2</span>
+        <h3>Find or list a room</h3>
+        <p>Renters browse approved rooms by city, budget, and room type. Hosts list individual rooms with photos, amenities, and honest monthly pricing.</p>
+      </div>
+      <div class="card step-card reveal">
+        <span class="step-num">3</span>
+        <h3>Request and move in</h3>
+        <p>Send a booking request with your preferred move-in date. Once the host accepts, coordinate the details and settle into your new space.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="benefits">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">{% icon 'handshake' %} Built for both sides</span>
+      <h2>Why renters and hosts choose ShareSplit Rent</h2>
+    </div>
+    <div class="benefits-grid">
+      <div class="card benefit-panel reveal">
+        <h3>{% icon 'user' %} For Renters</h3>
+        <ul class="benefit-list">
+          <li>{% icon 'check-circle' %} <span><strong>Affordable private rooms</strong> in Metro Manila, Cebu, Davao, and beyond.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>Clear monthly pricing</strong> in PHP — no hidden charges, no surprises.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>Shared kitchens and living areas</strong> that make a house feel like home.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>Verified hosts</strong> and secure booking requests before you commit.</span></li>
+        </ul>
+        <div class="mt-3"><a class="btn btn-primary" href="{% url 'register_renter' %}">Start finding a room</a></div>
+      </div>
+      <div class="card benefit-panel reveal">
+        <h3>{% icon 'key' %} For Property Owners</h3>
+        <ul class="benefit-list">
+          <li>{% icon 'check-circle' %} <span><strong>Steady rental income</strong> from spare rooms you already own.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>One dashboard</strong> for rooms, availability, and booking requests.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>Screen every request</strong> — accept or reject before anyone moves in.</span></li>
+          <li>{% icon 'check-circle' %} <span><strong>Admin support</strong> and listing review to keep quality high.</span></li>
+        </ul>
+        <div class="mt-3"><a class="btn btn-navy" href="{% url 'register_owner' %}">List your first room</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="trust" style="padding-top: 0;">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">{% icon 'shield' %} Trust &amp; safety</span>
+      <h2>Your safety is built into every step</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'shield' %}</div>
+        <h3>ID verification</h3>
+        <p>Renters and hosts submit government IDs reviewed by our admin team.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'check-circle' %}</div>
+        <h3>Approved listings</h3>
+        <p>Every property is reviewed and approved before it appears in search.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'lock' %}</div>
+        <h3>Secure requests</h3>
+        <p>Booking requests stay in-platform until both sides are comfortable.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'peso' %}</div>
+        <h3>Transparent pricing</h3>
+        <p>Monthly rent is shown upfront in PHP, with amenities and rules listed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div>
+        <span class="eyebrow gold">{% icon 'key' %} Become a host</span>
+        <h2>Own a property with a spare room?</h2>
+        <p>Join hundreds of Filipino hosts turning empty rooms into steady monthly income — with full control over who moves in.</p>
+        <div class="cta-actions">
+          <a class="btn btn-primary btn-lg" href="{% url 'register_owner' %}">Start hosting today</a>
+          <a class="btn btn-lg" style="background: rgba(255,255,255,0.1); color:#fff; border-color: rgba(255,255,255,0.3);" href="{% url 'become_a_host' %}">Learn more</a>
+        </div>
+      </div>
+      <div class="cta-photo">
+        <img src="{% static 'images/host.jpg' %}" alt="A friendly Filipino host welcoming a new renter with house keys" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

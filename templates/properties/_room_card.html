@@ -1,0 +1,36 @@
+{% load static sharesplit_tags %}
+<article class="room-card reveal">
+  <div class="room-card-media">
+    <a href="{% url 'room_detail' room.id %}" tabindex="-1" aria-hidden="true">
+      {% if room.main_image %}
+        <img src="{{ room.main_image.image.url }}" alt="{{ room.name }} — {{ room.property_listing.city }}" loading="lazy">
+      {% else %}
+        <img src="{% static 'images/rooms/room-1.jpg' %}" alt="{{ room.name }} — {{ room.property_listing.city }}" loading="lazy">
+      {% endif %}
+    </a>
+    <span class="badge {% if room.availability == 'AVAILABLE' %}badge-success{% else %}badge-warning{% endif %}"><span class="dot"></span> {{ room.get_availability_display }}</span>
+    <span class="badge type">{{ room.get_room_type_display }}</span>
+    {% if user.is_renter %}
+      <form method="post" action="{% url 'toggle_saved' room.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="save-btn {% if room.id in saved_room_ids %}saved{% endif %}"
+                aria-label="{% if room.id in saved_room_ids %}Remove from saved listings{% else %}Save this room{% endif %}"
+                aria-pressed="{% if room.id in saved_room_ids %}true{% else %}false{% endif %}">
+          {% icon 'heart' %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+  <div class="room-card-body">
+    <div class="room-price">{{ room.monthly_rent|peso }}<small> / month</small></div>
+    <h3 class="room-card-title"><a href="{% url 'room_detail' room.id %}">{{ room.name }}</a></h3>
+    <div class="room-location">{% icon 'pin' %} {{ room.property_listing.city }}, {{ room.property_listing.province }}</div>
+    <div class="room-meta">
+      {% if room.room_size %}<span>{% icon 'ruler' %} {{ room.room_size }} sqm</span>{% endif %}
+      <span>{% icon 'users' %} {{ room.max_occupants }} pax</span>
+      <span>{% icon 'bath' %} {{ room.get_bathroom_type_display|title }} bath</span>
+      {% if room.furnished %}<span>{% icon 'sofa' %} Furnished</span>{% endif %}
+    </div>
+  </div>
+</article>

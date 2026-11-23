@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Access Denied — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code">403</div>
+  <h1>This space is off-limits</h1>
+  <p>Your account doesn&rsquo;t have permission to view this page. Dashboards are role-specific — renters, hosts, and admins each have their own area.</p>
+  <div class="error-actions">
+    <a class="btn btn-primary" href="{% url 'dashboard' %}">{% icon 'grid' %} Go to my dashboard</a>
+    <a class="btn btn-secondary" href="{% url 'home' %}">Back to home</a>
+  </div>
+</div>
+{% endblock %}

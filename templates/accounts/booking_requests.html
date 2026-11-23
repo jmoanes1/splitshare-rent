@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Booking Requests — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="dash-head">
+  <div>
+    <span class="eyebrow">{% icon 'mail' %} Host tools</span>
+    <h1>Booking requests</h1>
+    <p>Review renter requests for your rooms. Accept the right fit, reject with a reason.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'owner_dashboard' %}">{% icon 'grid' %} Owner dashboard</a>
+</div>
+
+{% if pending_bookings %}
+  <div class="verify-banner" style="border-color: var(--border); background: var(--gold-soft);">
+    {% icon 'clock' %}
+    <div><strong>{{ pending_bookings.count }} request{{ pending_bookings.count|pluralize }} waiting for your reply</strong><span>Renters are waiting — responding quickly keeps your listing ranked well.</span></div>
+  </div>
+{% endif %}
+
+<div class="card">
+  {% if bookings %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Renter</th>
+            <th>Room</th>
+            <th>Move-in</th>
+            <th>Message</th>
+            <th>Requested</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in bookings %}
+            <tr>
+              <td>
+                <div class="cell-main">{{ booking.renter.get_full_name }}</div>
+                {% if booking.status == 'ACCEPTED' %}<div class="cell-sub"><a href="mailto:{{ booking.renter.email }}">{{ booking.renter.email }}</a>{% if booking.renter.phone_number %}<br><a href="tel:{{ booking.renter.phone_number }}">{{ booking.renter.phone_number }}</a>{% endif %}</div>{% endif %}
+              </td>
+              <td>
+                <div class="cell-main"><a href="{% url 'room_detail' booking.room.id %}">{{ booking.room.name }}</a></div>
+                <div class="cell-sub">{{ booking.room.property_listing.city }}</div>
+              </td>
+              <td>{{ booking.move_in_date|date:"M j, Y"|default:"Flexible" }}</td>
+              <td style="max-width: 260px;"><span class="cell-sub" style="display: block; white-space: pre-line;">{{ booking.message|default:"—"|truncatechars:140 }}</span></td>
+              <td>{{ booking.requested_at|date:"M j, Y" }}</td>
+              <td><span class="badge status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span></td>
+              <td>
+                {% if booking.status == 'PENDING' %}
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    <form method="post" action="{% url 'booking_action' booking.id %}"
+                          data-confirm="Accept this request? The room will be marked as reserved for this renter."
+                          data-confirm-title="Accept booking" data-confirm-ok="Accept">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="accept">
+                      <button class="btn btn-sm btn-primary" type="submit">{% icon 'check' %} Accept</button>
+                    </form>
+                    <details style="position: relative;">
+                      <summary class="btn btn-sm btn-danger-ghost" style="list-style: none; cursor: pointer;">{% icon 'x' %} Reject</summary>
+                      <form method="post" action="{% url 'booking_action' booking.id %}"
+                            style="width: 240px; margin-top: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <label class="form-label" for="rej-{{ booking.id }}">Reason (shared with renter)</label>
+                        <textarea class="form-control" id="rej-{{ booking.id }}" name="rejection_reason" rows="2" placeholder="e.g. Room already reserved" style="min-height: 64px;"></textarea>
+                        <button class="btn btn-sm btn-danger btn-block mt-1" type="submit">Confirm rejection</button>
+                      </form>
+                    </details>
+                  </div>
+                {% else %}
+                  <span class="cell-sub" style="display: block; text-align: right;">{{ booking.responded_at|date:"M j, Y"|default:"—" }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">{% icon 'mail' %}</div>
+      <h3>No booking requests yet</h3>
+      <p>When renters request your rooms, their messages and move-in dates will appear here.</p>
+      <a class="btn btn-primary" href="{% url 'owner_dashboard' %}">Manage my rooms</a>
+    </div>
+  {% endif %}
+</div>
+
+<div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div class="modal">
+    <h3 id="confirm-modal-title" data-modal-title>Are you sure?</h3>
+    <p data-modal-text></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" data-modal-cancel>Cancel</button>
+      <button class="btn btn-primary" type="button" data-modal-ok>Confirm</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

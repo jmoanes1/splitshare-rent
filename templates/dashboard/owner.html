@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}Owner Dashboard — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="dash-layout" id="top">
+  <aside class="dash-sidebar">
+    <div class="card">
+      <div class="dash-user">
+        <span class="avatar">
+          {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">
+          {% else %}{{ user.first_name|first|default:"H" }}{{ user.last_name|first }}{% endif %}
+        </span>
+        <div>
+          <strong>{{ user.get_full_name }}</strong>
+          <span>{{ user.email }}</span>
+        </div>
+      </div>
+      <nav class="dash-nav" aria-label="Dashboard">
+        <a href="#top" class="active">{% icon 'grid' %} Overview</a>
+        <a href="{% url 'booking_requests' %}">{% icon 'mail' %} Booking Requests {% if stats.pending_requests %}<span class="nav-count">{{ stats.pending_requests }}</span>{% endif %}</a>
+        <a href="#properties">{% icon 'building' %} My Properties</a>
+        <a href="#rooms">{% icon 'bed' %} Rooms &amp; Availability</a>
+        <div class="dash-nav-section">Account</div>
+        <a href="{% url 'profile' %}">{% icon 'user' %} My Profile</a>
+        <a href="{% url 'verification_submit' %}">{% icon 'shield' %} Verification</a>
+        <a href="{% url 'become_a_host' %}">{% icon 'sparkles' %} Hosting Guide</a>
+      </nav>
+    </div>
+  </aside>
+
+  <div>
+    <div class="dash-head">
+      <div>
+        <span class="eyebrow">{% icon 'key' %} Host dashboard</span>
+        <h1>Kumusta, {{ user.first_name|default:"host" }}!</h1>
+        <p>Your properties, rooms, and renter requests at a glance.</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'booking_requests' %}">{% icon 'mail' %} Review requests</a>
+    </div>
+
+    {% if verification_status == 'APPROVED' %}
+      <div class="verify-banner ok">
+        {% icon 'check-circle' %}
+        <div><strong>Host identity verified</strong><span>Renters see your trust badge on every listing.</span></div>
+      </div>
+    {% else %}
+      <div class="verify-banner">
+        {% icon 'shield' %}
+        <div><strong>Verify your host identity</strong><span>Verified hosts get more booking requests. Upload a government ID to get the badge.</span></div>
+        <a class="btn btn-sm btn-primary" href="{% url 'verification_submit' %}">Get verified</a>
+      </div>
+    {% endif %}
+
+    <div class="stat-grid stat-grid-five">
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Properties</span><span class="stat-icon navy">{% icon 'building' %}</span></div>
+        <span class="stat-value">{{ stats.properties }}</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Rooms</span><span class="stat-icon">{% icon 'bed' %}</span></div>
+        <span class="stat-value">{{ stats.rooms }}</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Available</span><span class="stat-icon">{% icon 'check-circle' %}</span></div>
+        <span class="stat-value">{{ stats.available_rooms }}</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Pending requests</span><span class="stat-icon gold">{% icon 'clock' %}</span></div>
+        <span class="stat-value">{{ stats.pending_requests }}</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Active rentals</span><span class="stat-icon navy">{% icon 'key' %}</span></div>
+        <span class="stat-value">{{ stats.active_rentals }}</span>
+      </div>
+    </div>
+
+    {% if pending_bookings %}
+      <section class="dash-section">
+        <div class="card">
+          <div class="card-title">{% icon 'mail' %}<h3>Requests waiting for you</h3></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Renter</th><th>Room</th><th>Move-in</th><th>Requested</th><th style="text-align: right;"></th></tr></thead>
+              <tbody>
+                {% for booking in pending_bookings|slice:":5" %}
+                  <tr>
+                    <td>
+                      <div class="cell-main">{{ booking.renter.get_full_name }}</div>
+                    </td>
+                    <td class="cell-main">{{ booking.room.name }}</td>
+                    <td>{{ booking.move_in_date|date:"M j, Y"|default:"Flexible" }}</td>
+                    <td>{{ booking.requested_at|date:"M j" }}</td>
+                    <td style="text-align: right;"><a class="btn btn-sm btn-primary" href="{% url 'booking_requests' %}">Review</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="dash-section" id="properties">
+      <div class="card">
+        <div class="card-title">{% icon 'building' %}<h3>My properties</h3></div>
+        {% if properties %}
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Property</th><th>Type</th><th>Location</th><th>Rooms</th><th>Review status</th><th>Published</th></tr></thead>
+              <tbody>
+                {% for property in properties %}
+                  <tr>
+                    <td>
+                      <div class="cell-main">{{ property.title }}</div>
+                      <div class="cell-sub">Added {{ property.created_at|date:"M j, Y" }}</div>
+                    </td>
+                    <td>{{ property.get_property_type_display }}</td>
+                    <td>{{ property.city }}, {{ property.province }}</td>
+                    <td>{{ property.rooms.count }}</td>
+                    <td><span class="badge status-{{ property.status|lower }}">{{ property.get_status_display }}</span></td>
+                    <td>{% if property.is_published %}<span class="badge badge-success">Live</span>{% else %}<span class="badge badge-muted">Hidden</span>{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="helptext mt-2 mb-0">{% icon 'info' %} Listings are created and edited by our admin team during onboarding — email support@sharesplitrent.ph to add or update a property.</p>
+        {% else %}
+          <div class="empty-state" style="padding: 1.75rem 1rem;">
+            <div class="empty-icon">{% icon 'building' %}</div>
+            <h3>No properties listed yet</h3>
+            <p>Our team will help you publish your first property. Verify your identity, then contact support to start onboarding.</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'become_a_host' %}">Read the hosting guide</a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dash-section" id="rooms">
+      <div class="card">
+        <div class="card-title">{% icon 'bed' %}<h3>Rooms &amp; availability</h3></div>
+        {% if properties %}
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Room</th><th>Property</th><th>Type</th><th>Monthly rent</th><th>Availability</th><th></th></tr></thead>
+              <tbody>
+                {% for property in properties %}
+                  {% for room in property.rooms.all %}
+                    <tr>
+                      <td class="cell-main">{{ room.name }}</td>
+                      <td class="cell-sub">{{ property.title }}</td>
+                      <td>{{ room.get_room_type_display }}</td>
+                      <td>{{ room.monthly_rent|peso }}</td>
+                      <td><span class="badge status-{{ room.availability|lower }}">{{ room.get_availability_display }}</span></td>
+                      <td style="text-align: right;">
+                        {% if property.is_published and property.status == 'APPROVED' %}
+                          <a class="btn btn-sm btn-secondary" href="{% url 'room_detail' room.id %}">View live</a>
+                        {% else %}
+                          <span class="cell-sub">Not public</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0" style="font-size: 0.875rem;">Rooms appear here once your property is listed.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

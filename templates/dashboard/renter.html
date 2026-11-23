@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}Renter Dashboard — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="dash-layout" id="top">
+  <aside class="dash-sidebar">
+    <div class="card">
+      <div class="dash-user">
+        <span class="avatar emerald">
+          {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">
+          {% else %}{{ user.first_name|first|default:"R" }}{{ user.last_name|first }}{% endif %}
+        </span>
+        <div>
+          <strong>{{ user.get_full_name }}</strong>
+          <span>{{ user.email }}</span>
+        </div>
+      </div>
+      <nav class="dash-nav" aria-label="Dashboard">
+        <a href="#top" class="active">{% icon 'grid' %} Overview</a>
+        <a href="{% url 'browse_rooms' %}">{% icon 'search' %} Browse Rooms</a>
+        <a href="#saved">{% icon 'heart' %} Saved Listings <span class="nav-count">{{ saved_rooms|length }}</span></a>
+        <a href="#bookings">{% icon 'calendar' %} My Bookings {% if pending_count %}<span class="nav-count">{{ pending_count }}</span>{% endif %}</a>
+        <a href="#rentals">{% icon 'key' %} Rental Info</a>
+        <div class="dash-nav-section">Account</div>
+        <a href="{% url 'profile' %}">{% icon 'user' %} My Profile</a>
+        <a href="{% url 'verification_submit' %}">{% icon 'shield' %} Verification</a>
+        <a href="{% url 'password_change' %}">{% icon 'lock' %} Change Password</a>
+      </nav>
+    </div>
+  </aside>
+
+  <div>
+    <div class="dash-head">
+      <div>
+        <span class="eyebrow">{% icon 'sparkles' %} Renter dashboard</span>
+        <h1>Welcome back, {{ user.first_name|default:"renter" }}!</h1>
+        <p>Here&rsquo;s everything happening with your room search.</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'browse_rooms' %}">{% icon 'search' %} Browse rooms</a>
+    </div>
+
+    {% if verification_status == 'APPROVED' %}
+      <div class="verify-banner ok">
+        {% icon 'check-circle' %}
+        <div><strong>Identity verified</strong><span>Hosts see your trust badge — requests from verified renters get faster replies.</span></div>
+      </div>
+    {% else %}
+      <div class="verify-banner">
+        {% icon 'shield' %}
+        <div><strong>Verify your identity</strong><span>Upload a government ID to unlock the verified badge and stand out to hosts.</span></div>
+        <a class="btn btn-sm btn-primary" href="{% url 'verification_submit' %}">Get verified</a>
+      </div>
+    {% endif %}
+
+    <div class="stat-grid">
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Saved rooms</span><span class="stat-icon">{% icon 'heart' %}</span></div>
+        <span class="stat-value">{{ saved_rooms|length }}</span>
+        <span class="stat-foot">In your shortlist</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Pending requests</span><span class="stat-icon gold">{% icon 'clock' %}</span></div>
+        <span class="stat-value">{{ pending_count }}</span>
+        <span class="stat-foot">Awaiting host reply</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Active rentals</span><span class="stat-icon navy">{% icon 'key' %}</span></div>
+        <span class="stat-value">{{ active_rentals|length }}</span>
+        <span class="stat-foot">Accepted bookings</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Member since</span><span class="stat-icon">{% icon 'calendar' %}</span></div>
+        <span class="stat-value small">{{ user.date_joined|date:"M Y" }}</span>
+        <span class="stat-foot">{{ user.get_role_display }} account</span>
+      </div>
+    </div>
+
+    <section class="dash-section" id="rentals">
+      <div class="card">
+        <div class="card-title">{% icon 'key' %}<h3>Rental information</h3></div>
+        {% if active_rentals %}
+          {% for booking in active_rentals %}
+            <div class="rental-card {% if not forloop.first %}mt-3{% endif %}">
+              <div class="rental-photo">
+                {% if booking.room.main_image %}
+                  <img src="{{ booking.room.main_image.image.url }}" alt="{{ booking.room.name }}">
+                {% else %}
+                  <img src="{% static 'images/rooms/room-1.jpg' %}" alt="{{ booking.room.name }}">
+                {% endif %}
+              </div>
+              <div>
+                <div class="flex-between flex-wrap">
+                  <h3 class="mb-0"><a href="{% url 'room_detail' booking.room.id %}">{{ booking.room.name }}</a></h3>
+                  <span class="badge badge-success">{% icon 'check-circle' %} Accepted</span>
+                </div>
+                <div class="room-location mt-1">{% icon 'pin' %} {{ booking.room.property_listing.location }}</div>
+                <div class="rental-facts">
+                  <div><span>Monthly rent</span><strong>{{ booking.room.monthly_rent|peso }}</strong></div>
+                  <div><span>Move-in date</span><strong>{{ booking.move_in_date|date:"M j, Y"|default:"To coordinate" }}</strong></div>
+                  <div><span>Host</span><strong>{{ booking.room.property_listing.owner.get_full_name }}</strong></div>
+                  <div><span>Accepted on</span><strong>{{ booking.responded_at|date:"M j, Y" }}</strong></div>
+                </div>
+                <div class="flex flex-wrap mt-2">
+                  <a class="btn btn-secondary btn-sm" href="mailto:{{ booking.room.property_listing.owner.email }}">{% icon 'mail' %} Email host</a>
+                  {% if booking.room.property_listing.owner.phone_number %}<a class="btn btn-secondary btn-sm" href="tel:{{ booking.room.property_listing.owner.phone_number }}">{% icon 'phone' %} {{ booking.room.property_listing.owner.phone_number }}</a>{% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state" style="padding: 1.75rem 1rem;">
+            <div class="empty-icon">{% icon 'key' %}</div>
+            <h3>No active rental yet</h3>
+            <p>Once a host accepts your booking request, your room, rent, and move-in details will appear here.</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'browse_rooms' %}">Find a room</a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dash-section" id="bookings">
+      <div class="card">
+        <div class="card-title">{% icon 'calendar' %}<h3>My booking requests</h3></div>
+        {% if bookings %}
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Room</th><th>Monthly rent</th><th>Move-in</th><th>Requested</th><th>Status</th><th style="text-align: right;">Action</th></tr>
+              </thead>
+              <tbody>
+                {% for booking in bookings %}
+                  <tr>
+                    <td>
+                      <div class="cell-main"><a href="{% url 'room_detail' booking.room.id %}">{{ booking.room.name }}</a></div>
+                      <div class="cell-sub">{{ booking.room.property_listing.city }} · Host: {{ booking.room.property_listing.owner.get_full_name }}</div>
+                      {% if booking.status == 'REJECTED' and booking.message %}<div class="cell-sub mt-1">{{ booking.message|linebreaksbr }}</div>{% endif %}
+                    </td>
+                    <td>{{ booking.room.monthly_rent|peso }}</td>
+                    <td>{{ booking.move_in_date|date:"M j, Y"|default:"Flexible" }}</td>
+                    <td>{{ booking.requested_at|date:"M j, Y" }}</td>
+                    <td><span class="badge status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span></td>
+                    <td style="text-align: right;">
+                      {% if booking.status == 'PENDING' %}
+                        <form method="post" action="{% url 'booking_cancel' booking.id %}"
+                              data-confirm="Withdraw this booking request? The host will see it as cancelled."
+                              data-confirm-title="Cancel request" data-confirm-ok="Withdraw request">
+                          {% csrf_token %}
+                          <button class="btn btn-sm btn-danger-ghost" type="submit">{% icon 'x' %} Cancel</button>
+                        </form>
+                      {% else %}
+                        <span class="cell-sub">{{ booking.responded_at|date:"M j"|default:"—" }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 1.75rem 1rem;">
+            <div class="empty-icon">{% icon 'calendar' %}</div>
+            <h3>No booking requests yet</h3>
+            <p>Found a room you like? Send the host a request with your move-in date — it&rsquo;s free.</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'browse_rooms' %}">Browse available rooms</a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dash-section" id="saved">
+      <div class="card">
+        <div class="card-title">{% icon 'heart' %}<h3>Saved listings</h3></div>
+        {% if saved_rooms %}
+          <div class="room-grid browse-grid">
+            {% for room in saved_rooms %}
+              {% include 'properties/_room_card.html' with room=room %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 1.75rem 1rem;">
+            <div class="empty-icon">{% icon 'heart' %}</div>
+            <h3>Your shortlist is empty</h3>
+            <p>Tap the heart on any room to save it here and compare your favorites side by side.</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'browse_rooms' %}">Discover rooms</a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div class="modal">
+    <h3 id="confirm-modal-title" data-modal-title>Are you sure?</h3>
+    <p data-modal-text></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" data-modal-cancel>Cancel</button>
+      <button class="btn btn-danger" type="button" data-modal-ok>Confirm</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

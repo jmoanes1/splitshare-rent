@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Server Error — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code" style="color: var(--error);">500</div>
+  <h1>Something went wrong on our side</h1>
+  <p>Our team has been notified. Please try again in a moment — if it keeps happening, email support@sharesplitrent.ph.</p>
+  <div class="error-actions">
+    <a class="btn btn-primary" href="{% url 'home' %}">Back to home</a>
+    <a class="btn btn-secondary" href="{% url 'browse_rooms' %}">Browse rooms</a>
+  </div>
+</div>
+{% endblock %}

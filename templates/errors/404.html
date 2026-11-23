@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Page Not Found — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code">404</div>
+  <h1>We couldn&rsquo;t find that room</h1>
+  <p>The page may have been moved, the listing may have been taken down, or the link might be mistyped. Let&rsquo;s get you back to the good spaces.</p>
+  <div class="error-actions">
+    <a class="btn btn-primary" href="{% url 'browse_rooms' %}">{% icon 'search' %} Browse rooms</a>
+    <a class="btn btn-secondary" href="{% url 'home' %}">Back to home</a>
+  </div>
+</div>
+{% endblock %}

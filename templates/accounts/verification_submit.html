@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Submit Verification — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div style="max-width: 620px; margin-inline: auto;">
+  <div class="dash-head">
+    <div>
+      <span class="eyebrow">{% icon 'shield' %} Trust &amp; safety</span>
+      <h1>Verify your identity</h1>
+      <p>Upload a clear photo or scan of a government-issued ID. Our admin team typically reviews within 24–48 hours.</p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-title">{% icon 'info' %}<h3>Accepted documents</h3></div>
+    <ul class="plain-list amenity-grid">
+      <li>{% icon 'check-circle' %} Philippine passport</li>
+      <li>{% icon 'check-circle' %} Driver&rsquo;s license</li>
+      <li>{% icon 'check-circle' %} PhilSys / national ID</li>
+      <li>{% icon 'check-circle' %} UMID / SSS ID</li>
+      <li>{% icon 'check-circle' %} Postal ID</li>
+      <li>{% icon 'check-circle' %} Voter&rsquo;s ID</li>
+    </ul>
+    <p class="helptext mt-2 mb-0">Files stay private — only you and authorized admins can view them. JPG, PNG, or PDF, max 10 MB.</p>
+  </div>
+
+  <div class="card">
+    {% if form.non_field_errors %}
+      <div class="form-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% include 'accounts/_field.html' with field=form.document_type %}
+      <div class="form-group">
+        <label class="form-label" for="{{ form.file.id_for_label }}">Document file <span class="req">*</span></label>
+        <input type="file" name="file" id="{{ form.file.id_for_label }}" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+        <span class="helptext">Make sure all four corners are visible and text is readable.</span>
+        {{ form.file.errors }}
+      </div>
+      <div class="flex mt-3">
+        <button class="btn btn-primary" type="submit">{% icon 'shield' %} Submit for review</button>
+        <a class="btn btn-ghost" href="{% url 'profile' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

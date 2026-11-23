@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}Browse Rooms — ShareSplit Rent{% endblock %}
+{% block meta_description %}Browse available private and shared rooms for rent across the Philippines. Filter by city, budget, and room type — transparent monthly pricing in PHP.{% endblock %}
+
+{% block content %}
+<div class="flex-between flex-wrap mb-3">
+  <div>
+    <span class="eyebrow">{% icon 'search' %} Room listings</span>
+    <h1 class="mb-0" style="font-size: 1.65rem;">Browse available rooms</h1>
+  </div>
+  <button class="btn btn-secondary filter-toggle-mobile" type="button" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+    {% icon 'filter' %} Filters
+  </button>
+</div>
+
+<div class="browse-layout">
+  <aside class="filter-panel" id="filter-panel" aria-label="Search filters">
+    <div class="card">
+      <h3>{% icon 'filter' %} Filter rooms</h3>
+      <form method="get" action="{% url 'browse_rooms' %}">
+        <div class="filter-group">
+          <label class="form-label" for="f-q">Location keyword</label>
+          <input class="form-control" type="search" id="f-q" name="q" value="{{ query }}" placeholder="City, province, region">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="f-city">City</label>
+          <select class="form-control" id="f-city" name="city">
+            <option value="">All cities</option>
+            {% for c in cities %}
+              <option value="{{ c }}" {% if c == city %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="f-province">Province</label>
+          <select class="form-control" id="f-province" name="province">
+            <option value="">All provinces</option>
+            {% for p in provinces %}
+              <option value="{{ p }}" {% if p == province %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="f-price">Max monthly rent (PHP)</label>
+          <input class="form-control" type="number" id="f-price" name="max_price" min="0" step="500" value="{{ max_price }}" placeholder="e.g. 8000">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="f-type">Room type</label>
+          <select class="form-control" id="f-type" name="room_type">
+            <option value="">Any type</option>
+            {% for value, label in room_type_choices %}
+              <option value="{{ value }}" {% if value == room_type %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="f-furnished">Furnishing</label>
+          <select class="form-control" id="f-furnished" name="furnished">
+            <option value="">Any</option>
+            <option value="true" {% if furnished == 'true' %}selected{% endif %}>Furnished</option>
+            <option value="false" {% if furnished == 'false' %}selected{% endif %}>Unfurnished</option>
+          </select>
+        </div>
+        {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <div class="filter-actions">
+          <button class="btn btn-primary btn-block" type="submit">{% icon 'search' %} Apply filters</button>
+          <a class="btn btn-ghost btn-block" href="{% url 'browse_rooms' %}">Clear all</a>
+        </div>
+      </form>
+    </div>
+  </aside>
+
+  <div>
+    {% if price_error %}<div class="alert alert-error" role="alert">{% icon 'alert' %}<span>Enter a valid non-negative monthly budget.</span></div>{% endif %}
+    <div class="browse-toolbar">
+      <span class="browse-count"><strong>{{ total_count }}</strong> room{{ total_count|pluralize }} found{% if query %} for &ldquo;{{ query }}&rdquo;{% endif %}</span>
+      <form method="get" action="{% url 'browse_rooms' %}" class="sort-form">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        {% if city %}<input type="hidden" name="city" value="{{ city }}">{% endif %}
+        {% if province %}<input type="hidden" name="province" value="{{ province }}">{% endif %}
+        {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+        {% if room_type %}<input type="hidden" name="room_type" value="{{ room_type }}">{% endif %}
+        {% if furnished %}<input type="hidden" name="furnished" value="{{ furnished }}">{% endif %}
+        <label for="sort-select">Sort by</label>
+        <select class="form-control" id="sort-select" name="sort" data-auto-submit>
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest first</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: low to high</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: high to low</option>
+        </select>
+        <noscript><button class="btn btn-sm btn-secondary" type="submit">Go</button></noscript>
+      </form>
+    </div>
+
+    {% if query or city or province or max_price or room_type or furnished %}
+      <div class="active-filters">
+        {% if query %}<span class="filter-tag">&ldquo;{{ query }}&rdquo; <a href="{% query_replace q=None %}" aria-label="Remove keyword filter">{% icon 'x' %}</a></span>{% endif %}
+        {% if city %}<span class="filter-tag">{{ city }} <a href="{% query_replace city=None %}" aria-label="Remove city filter">{% icon 'x' %}</a></span>{% endif %}
+        {% if province %}<span class="filter-tag">{{ province }} <a href="{% query_replace province=None %}" aria-label="Remove province filter">{% icon 'x' %}</a></span>{% endif %}
+        {% if max_price %}<span class="filter-tag">Up to {{ max_price|peso }} <a href="{% query_replace max_price=None %}" aria-label="Remove price filter">{% icon 'x' %}</a></span>{% endif %}
+        {% if room_type %}<span class="filter-tag">{{ room_type|lower|title }} <a href="{% query_replace room_type=None %}" aria-label="Remove room type filter">{% icon 'x' %}</a></span>{% endif %}
+        {% if furnished %}<span class="filter-tag">{% if furnished == 'true' %}Furnished{% else %}Unfurnished{% endif %} <a href="{% query_replace furnished=None %}" aria-label="Remove furnishing filter">{% icon 'x' %}</a></span>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if rooms %}
+      <div class="room-grid browse-grid">
+        {% for room in rooms %}
+          {% include 'properties/_room_card.html' with room=room %}
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Pagination">
+          {% if page_obj.has_previous %}
+            <a href="{% query_replace page=page_obj.previous_page_number %}" aria-label="Previous page">{% icon 'chevron-left' %}</a>
+          {% else %}
+            <span class="disabled">{% icon 'chevron-left' %}</span>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="current" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="{% query_replace page=num %}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a href="{% query_replace page=page_obj.next_page_number %}" aria-label="Next page">{% icon 'chevron-right' %}</a>
+          {% else %}
+            <span class="disabled">{% icon 'chevron-right' %}</span>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="card empty-state">
+        <div class="empty-icon">{% icon 'search' %}</div>
+        <h3>No rooms match your filters</h3>
+        <p>Try widening your budget, choosing a different city, or clearing some filters to see more spaces.</p>
+        <a class="btn btn-primary" href="{% url 'browse_rooms' %}">Clear all filters</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Admin Dashboard — ShareSplit Rent{% endblock %}
+
+{% block content %}
+<div class="dash-layout" id="top">
+  <aside class="dash-sidebar">
+    <div class="card">
+      <div class="dash-user">
+        <span class="avatar">{{ user.first_name|first|default:"A" }}{{ user.last_name|first }}</span>
+        <div>
+          <strong>{{ user.get_full_name }}</strong>
+          <span>{{ user.email }}</span>
+        </div>
+      </div>
+      <nav class="dash-nav" aria-label="Dashboard">
+        <a href="#top" class="active">{% icon 'grid' %} Overview</a>
+        <a href="{% url 'verification_review' %}">{% icon 'shield' %} Verification Review {% if stats.pending_verifications %}<span class="nav-count">{{ stats.pending_verifications }}</span>{% endif %}</a>
+        <a href="#users">{% icon 'users' %} Recent Users</a>
+        <a href="/admin/">{% icon 'settings' %} Django Admin</a>
+        <div class="dash-nav-section">System</div>
+        <a href="#health">{% icon 'chart' %} Platform Health</a>
+      </nav>
+    </div>
+  </aside>
+
+  <div>
+    <div class="dash-head">
+      <div>
+        <span class="eyebrow">{% icon 'shield' %} Admin dashboard</span>
+        <h1>Platform overview</h1>
+        <p>Marketplace activity, verification queue, and system health.</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'verification_review' %}">{% icon 'shield' %} Review verifications</a>
+    </div>
+
+    <div class="stat-grid">
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Total users</span><span class="stat-icon navy">{% icon 'users' %}</span></div>
+        <span class="stat-value">{{ stats.total_users }}</span>
+        <span class="stat-foot">{{ stats.total_renters }} renters · {{ stats.total_owners }} owners · {{ stats.total_admins }} admins</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Properties</span><span class="stat-icon">{% icon 'building' %}</span></div>
+        <span class="stat-value">{{ stats.total_properties }}</span>
+        <span class="stat-foot">{{ stats.published_properties }} live · {{ stats.pending_properties }} pending review</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Rooms listed</span><span class="stat-icon">{% icon 'bed' %}</span></div>
+        <span class="stat-value">{{ stats.total_rooms }}</span>
+        <span class="stat-foot">{{ stats.total_bookings }} booking requests all-time</span>
+      </div>
+      <div class="card stat-card reveal">
+        <div class="stat-top"><span class="stat-label">Pending verifications</span><span class="stat-icon gold">{% icon 'clock' %}</span></div>
+        <span class="stat-value">{{ stats.pending_verifications }}</span>
+        <span class="stat-foot">Documents awaiting review</span>
+      </div>
+    </div>
+
+    {% if pending_documents %}
+      <section class="dash-section">
+        <div class="card">
+          <div class="card-title">{% icon 'shield' %}<h3>Verification queue</h3></div>
+          <div class="doc-list">
+            {% for doc in pending_documents %}
+              <div class="doc-item">
+                {% icon 'doc' %}
+                <div>
+                  <strong>{{ doc.user.get_full_name }}</strong>
+                  <span>{{ doc.get_document_type_display }} · {{ doc.submitted_at|date:"M j, Y g:i A" }}</span>
+                </div>
+                <span class="badge badge-warning">Pending</span>
+                <a class="btn btn-sm btn-primary" href="{% url 'verification_review' %}" style="margin-left: 0.5rem;">Review</a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="dash-section" id="users">
+      <div class="card">
+        <div class="card-title">{% icon 'users' %}<h3>Recent users</h3></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for u in recent_users %}
+                <tr>
+                  <td class="cell-main">{{ u.get_full_name }}</td>
+                  <td class="cell-sub">{{ u.email }}</td>
+                  <td><span class="badge {% if u.role == 'OWNER' %}badge-emerald{% elif u.role == 'ADMIN' %}badge-navy{% endif %}">{{ u.get_role_display }}</span></td>
+                  <td>{{ u.date_joined|date:"M j, Y" }}</td>
+                  <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="dash-section" id="health">
+      <div class="card">
+        <div class="card-title">{% icon 'chart' %}<h3>Platform health</h3></div>
+        <div class="flex flex-wrap">
+          {% if stats.database_ok %}
+            <span class="chip">{% icon 'check-circle' %} Database connection healthy</span>
+          {% else %}
+            <span class="chip" style="color: var(--error); border-color: var(--error);">{% icon 'alert' %} Database connection failed</span>
+          {% endif %}
+          <span class="chip">{% icon 'shield' %} Role-based access enforced</span>
+          <span class="chip">{% icon 'lock' %} Verification documents private</span>
+          <span class="chip">{% icon 'mail' %} Email: console backend (dev)</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

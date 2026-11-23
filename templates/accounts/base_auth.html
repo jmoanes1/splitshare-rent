@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block main_class %}main-content flush{% endblock %}
+{% block messages %}{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+  <div class="auth-brand">
+    <a class="brand" href="{% url 'home' %}" style="color: #fff; margin-bottom: 2.25rem;">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+      </span>
+      <span class="brand-name" style="color:#fff;">ShareSplit <span style="color: var(--gold);">Rent</span></span>
+    </a>
+    {% block auth_brand %}
+      <h2>Find your space. Share more. Live better.</h2>
+      <p>The trusted room-rental marketplace of the Philippines — affordable rooms, verified hosts, transparent pricing.</p>
+      <ul class="auth-points">
+        <li>{% icon 'shield' %} ID-verified renters and hosts</li>
+        <li>{% icon 'peso' %} Clear monthly pricing in PHP</li>
+        <li>{% icon 'lock' %} Secure, request-based booking</li>
+      </ul>
+    {% endblock %}
+    <div class="auth-quote">&ldquo;A spare room can be someone&rsquo;s fresh start — and your steady income.&rdquo;</div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-card {% block auth_width %}{% endblock %}">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+            {% if message.tags == 'success' %}{% icon 'check-circle' %}{% elif message.tags == 'error' %}{% icon 'alert' %}{% else %}{% icon 'info' %}{% endif %}
+            <span>{{ message }}</span>
+            <button class="alert-close" type="button" aria-label="Dismiss">{% icon 'x' %}</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div class="card">
+        {% block auth_form %}{% endblock %}
+      </div>
+      {% block auth_alt %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

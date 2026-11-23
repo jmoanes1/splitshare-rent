@@ -1,0 +1,33 @@
+{% extends 'accounts/base_auth.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Email Verification — ShareSplit Rent{% endblock %}
+
+{% block auth_form %}
+  <div class="text-center">
+    <div class="trust-icon">{% if verification_invalid %}{% icon 'alert' %}{% elif verification_complete or user.email_verified %}{% icon 'check-circle' %}{% else %}{% icon 'mail' %}{% endif %}</div>
+    <div class="auth-head">
+      {% if verification_invalid %}
+        <h1>This link is no longer valid</h1>
+        <p>Verification links expire after 24 hours. Sign in to request a fresh link.</p>
+      {% elif verification_complete or user.email_verified %}
+        <h1>Email verified</h1>
+        <p>Your email address has been confirmed. You&rsquo;re ready to continue exploring ShareSplit Rent.</p>
+      {% else %}
+        <h1>Verify your email</h1>
+        <p>Check the inbox for <strong>{{ user.email }}</strong> and follow the verification link. Don&rsquo;t forget to check your spam folder.</p>
+      {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+      {% if not user.email_verified and not verification_complete %}
+        <form method="post" action="{% url 'email_verification_send' %}">
+          {% csrf_token %}
+          <button class="btn btn-primary btn-block btn-lg" type="submit">{% icon 'mail' %} Send verification link</button>
+        </form>
+      {% endif %}
+      <a class="btn btn-secondary btn-block mt-2" href="{% url 'dashboard' %}">Go to dashboard {% icon 'arrow-right' %}</a>
+    {% else %}
+      <a class="btn btn-primary btn-block btn-lg" href="{% url 'login' %}">Log in to continue {% icon 'arrow-right' %}</a>
+    {% endif %}
+  </div>
+{% endblock %}

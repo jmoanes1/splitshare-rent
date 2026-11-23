@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static sharesplit_tags %}
+
+{% block title %}About Us — ShareSplit Rent{% endblock %}
+{% block meta_description %}ShareSplit Rent is on a mission to make affordable, trustworthy room rentals accessible to every Filipino — renters and hosts alike.{% endblock %}
+{% block main_class %}main-content flush{% endblock %}
+
+{% block messages %}
+  {% if messages %}
+    <div class="container" style="padding-top: 1.25rem;">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+          {% icon 'info' %}<span>{{ message }}</span>
+          <button class="alert-close" type="button" aria-label="Dismiss">{% icon 'x' %}</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">{% icon 'sparkles' %} About ShareSplit Rent</span>
+    <h1>Housing that fits real Filipino lives.</h1>
+    <p>We connect people who need an affordable place to stay with homeowners who have a room to share — safely, transparently, and without the usual brokerage runaround.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="benefits-grid">
+      <div class="reveal">
+        <span class="eyebrow">{% icon 'pin' %} Our mission</span>
+        <h2>Make room-sharing trusted and simple</h2>
+        <p>Millions of Filipinos — students, young professionals, and families — look for a safe, affordable room near work or school. At the same time, countless homes have a spare room sitting empty.</p>
+        <p>ShareSplit Rent bridges that gap with a marketplace built on verification, honest pricing, and mutual respect. Every listing is reviewed, every user is encouraged to verify their identity, and every booking starts as a request — never a surprise.</p>
+        <p class="mb-0"><strong style="color: var(--navy);">Find Your Space. Share More. Live Better.</strong> That&rsquo;s the promise we build toward every day.</p>
+      </div>
+      <div class="card reveal" style="padding: 0; overflow: hidden;">
+        <img src="{% static 'images/hero.jpg' %}" alt="A bright shared home living room" style="width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/3;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how" style="background: var(--surface); border-block: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">{% icon 'grid' %} What we value</span>
+      <h2>The principles behind the platform</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'shield' %}</div>
+        <h3>Trust first</h3>
+        <p>ID verification and listing review are built into the core flow, not bolted on.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'peso' %}</div>
+        <h3>Honest pricing</h3>
+        <p>Monthly rent in PHP, shown upfront. What you see is what you pay.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'handshake' %}</div>
+        <h3>Respect both sides</h3>
+        <p>Hosts approve every request; renters know the rules before they commit.</p>
+      </div>
+      <div class="card trust-item reveal">
+        <div class="trust-icon">{% icon 'pin' %}</div>
+        <h3>Local by design</h3>
+        <p>Built for Philippine cities, barangays, and budgets — not a foreign template.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="trust">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">{% icon 'lock' %} Trust &amp; safety</span>
+      <h2>How we keep the community safe</h2>
+      <p>Three layers of protection work together on every listing and every request.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="card step-card reveal">
+        <span class="step-num">{% icon 'user' %}</span>
+        <h3>Identity verification</h3>
+        <p>Renters and hosts upload a government-issued ID. Our admin team reviews each document before granting verified status.</p>
+      </div>
+      <div class="card step-card reveal">
+        <span class="step-num">{% icon 'home' %}</span>
+        <h3>Listing approval</h3>
+        <p>Properties pass admin review before publication. Photos, pricing, amenities, and house rules are checked for honesty and completeness.</p>
+      </div>
+      <div class="card step-card reveal">
+        <span class="step-num">{% icon 'mail' %}</span>
+        <h3>Request-based booking</h3>
+        <p>Nothing is confirmed automatically. Hosts read each request, ask questions, and accept only when both sides are ready.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div>
+        <span class="eyebrow gold">{% icon 'sparkles' %} Join the community</span>
+        <h2>Whether you&rsquo;re finding a room or filling one — start here.</h2>
+        <p>Free accounts for renters and hosts. Verified profiles, honest listings, and a team that has your back.</p>
+        <div class="cta-actions">
+          <a class="btn btn-primary btn-lg" href="{% url 'register_renter' %}">Find a room</a>
+          <a class="btn btn-primary btn-lg" href="{% url 'register_owner' %}">Become a host</a>
+        </div>
+      </div>
+      <div class="cta-photo">
+        <img src="{% static 'images/rooms/room-5.jpg' %}" alt="A calm, minimalist bedroom available for rent" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

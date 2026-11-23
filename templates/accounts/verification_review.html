@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load sharesplit_tags %}
+
+{% block title %}Verification Review — ShareSplit Rent Admin{% endblock %}
+
+{% block content %}
+<div class="dash-head">
+  <div>
+    <span class="eyebrow">{% icon 'shield' %} Admin</span>
+    <h1>Verification review</h1>
+    <p>Review submitted identity documents and approve or reject each submission.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">{% icon 'grid' %} Admin dashboard</a>
+</div>
+
+<div class="card">
+  {% if documents %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Document</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>File</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in documents %}
+            <tr>
+              <td>
+                <div class="cell-main">{{ doc.user.get_full_name }}</div>
+                <div class="cell-sub">{{ doc.user.email }} · {{ doc.user.get_role_display }}</div>
+              </td>
+              <td>{{ doc.get_document_type_display }}</td>
+              <td>{{ doc.submitted_at|date:"M j, Y g:i A" }}</td>
+              <td><span class="badge status-{{ doc.status|lower }}">{{ doc.get_status_display }}</span></td>
+              <td><a href="{% url 'verification_document' doc.id %}" target="_blank" rel="noopener" class="btn btn-sm btn-secondary">{% icon 'doc' %} View</a></td>
+              <td>
+                {% if doc.status == 'PENDING' %}
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    <form method="post" action="{% url 'verification_review_action' doc.id 'approve' %}"
+                          data-confirm="Approve this document and mark the user as verified?"
+                          data-confirm-title="Approve document" data-confirm-ok="Approve">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-primary" type="submit">{% icon 'check' %} Approve</button>
+                    </form>
+                    <details style="position: relative;">
+                      <summary class="btn btn-sm btn-danger-ghost" style="list-style: none; cursor: pointer;">{% icon 'x' %} Reject</summary>
+                      <form method="post" action="{% url 'verification_review_action' doc.id 'reject' %}"
+                            style="width: 240px; margin-top: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem;">
+                        {% csrf_token %}
+                        <label class="form-label" for="reason-{{ doc.id }}">Rejection reason</label>
+                        <textarea class="form-control" id="reason-{{ doc.id }}" name="rejection_reason" rows="2" placeholder="e.g. Photo is blurred" style="min-height: 64px;"></textarea>
+                        <button class="btn btn-sm btn-danger btn-block mt-1" type="submit">Confirm rejection</button>
+                      </form>
+                    </details>
+                  </div>
+                {% else %}
+                  <div class="cell-sub" style="text-align: right;">
+                    {% if doc.reviewed_by %}by {{ doc.reviewed_by.get_full_name }}{% endif %}
+                    {% if doc.reviewed_at %}<br>{{ doc.reviewed_at|date:"M j, Y" }}{% endif %}
+                  </div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">{% icon 'shield' %}</div>
+      <h3>No documents to review</h3>
+      <p>When renters or hosts submit identity documents, they&rsquo;ll appear here for review.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div class="modal">
+    <h3 id="confirm-modal-title" data-modal-title>Are you sure?</h3>
+    <p data-modal-text></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" data-modal-cancel>Cancel</button>
+      <button class="btn btn-primary" type="button" data-modal-ok>Confirm</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
