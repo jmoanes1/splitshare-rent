@@ -20,10 +20,12 @@ handler403 = core_views.forbidden
 handler404 = core_views.not_found
 handler500 = core_views.server_error
 
-# Serve uploaded media in local development only.
-if settings.DEBUG:
-    urlpatterns += [
-        re_path(r'^media/verification_documents/(?P<path>.*)$', account_views.private_media),
-    ]
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.views.static import serve
+from django.urls import re_path
+
+# Serve uploaded media files
+urlpatterns += [
+    re_path(r'^media/verification_documents/(?P<path>.*)$', account_views.private_media),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
 

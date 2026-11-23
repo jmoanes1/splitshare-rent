@@ -8,5 +8,5 @@ venv/
 staticfiles/
 media/*
 !media/.gitkeep
-static/images/*
-!static/images/.gitkeep
+# static/images/*
+# !static/images/.gitkeep
