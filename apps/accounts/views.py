@@ -283,3 +283,20 @@ def verification_review_action(request, document_id, action):
     )
     return redirect('verification_review')
 
+
+@admin_required
+@require_POST
+def admin_delete_user(request, user_id):
+    """Admin view: safely delete a user account."""
+    user_to_delete = get_object_or_404(User, id=user_id)
+    if user_to_delete == request.user:
+        messages.error(request, 'You cannot delete your own admin account.')
+        return redirect('admin_dashboard')
+
+    email = user_to_delete.email
+    full_name = user_to_delete.get_full_name() or email
+    user_to_delete.delete()
+    messages.success(request, f'User account "{full_name}" ({email}) has been permanently deleted.')
+    return redirect('admin_dashboard')
+
+

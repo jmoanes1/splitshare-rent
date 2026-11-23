@@ -84,7 +84,7 @@
         <div class="card-title">{% icon 'users' %}<h3>Recent users</h3></div>
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
               {% for u in recent_users %}
                 <tr>
@@ -93,6 +93,21 @@
                   <td><span class="badge {% if u.role == 'OWNER' %}badge-emerald{% elif u.role == 'ADMIN' %}badge-navy{% endif %}">{{ u.get_role_display }}</span></td>
                   <td>{{ u.date_joined|date:"M j, Y" }}</td>
                   <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}</td>
+                  <td>
+                    {% if u != user %}
+                      <form method="post" action="{% url 'admin_delete_user' u.id %}" style="display:inline;"
+                            data-confirm="Are you sure you want to permanently delete user '{{ u.email }}'? This will also delete their profile and associated listings/bookings."
+                            data-confirm-title="Delete User Account"
+                            data-confirm-ok="Delete Account">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger-ghost" title="Delete account">
+                          {% icon 'trash' %} Delete
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted" style="font-size: 0.75rem;">(Current Admin)</span>
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

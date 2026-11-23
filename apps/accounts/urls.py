@@ -64,4 +64,9 @@ urlpatterns = [
         views.verification_review_action,
         name='verification_review_action',
     ),
+    path(
+        'admin/user/<int:user_id>/delete/',
+        views.admin_delete_user,
+        name='admin_delete_user',
+    ),
 ]
